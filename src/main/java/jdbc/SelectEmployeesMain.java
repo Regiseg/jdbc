@@ -3,13 +3,15 @@ package jdbc;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
-public class EmployeesMain {
+public class SelectEmployeesMain {
 
     public static void main(String[] args) {
-
         MariaDbDataSource dataSource;
 
         try {
@@ -24,12 +26,17 @@ public class EmployeesMain {
 
         try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement("INSERT INTO employees(emp_name) VALUES (?)")
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT emp_name FROM employees;")
         ) {
-            ps.setString(1, "Sziszi");
-            ps.executeUpdate();
+            List<String> names = new ArrayList<>();
+            while (rs.next()) {
+                String name = rs.getString("emp_name");
+                names.add(name);
+            }
+            System.out.println(names);
         } catch (SQLException throwables) {
-            throw new IllegalStateException("Cannot insert");
+            throw new IllegalStateException("Cannot connection");
         }
     }
 }
