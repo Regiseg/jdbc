@@ -2,9 +2,8 @@ package jdbc;
 
 import org.mariadb.jdbc.MariaDbDataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 public class EmployeesMain {
 
@@ -22,14 +21,16 @@ public class EmployeesMain {
             throw new IllegalStateException("Connection failed!", sqlException);
         }
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement("INSERT INTO employees(emp_name) VALUES (?)")
-        ) {
-            ps.setString(1, "Sziszi");
-            ps.executeUpdate();
-        } catch (SQLException throwables) {
-            throw new IllegalStateException("Cannot insert");
-        }
+        EmployeesDao employeesDao = new EmployeesDao(dataSource);
+
+        employeesDao.createEmployee("Bibi");
+
+        List<String> names = employeesDao.listEmployeesNames();
+
+        System.out.println(names);
+
+        String name = employeesDao.findEmployeeNameById(2);
+
+        System.out.println(name);
     }
 }
