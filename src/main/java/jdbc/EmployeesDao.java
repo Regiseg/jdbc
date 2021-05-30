@@ -13,15 +13,59 @@ public class EmployeesDao {
         this.dataSource = dataSource;
     }
 
-    public void createEmployee(String name) {
+    public Long createEmployee(String name) {
         try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement("INSERT INTO employees(emp_name) VALUES (?)")
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO employees(emp_name) VALUES (?)",
+                        Statement.RETURN_GENERATED_KEYS)
         ) {
+
             ps.setString(1, name);
             ps.executeUpdate();
-        } catch (SQLException throwables) {
-            throw new IllegalStateException("Cannot insert");
+
+            return getIdByStatement(ps);
+
+        } catch (SQLException se) {
+            throw new IllegalStateException("Cannot insert", se);
+        }
+    }
+
+    public void createEmployees(List<String> names) {
+        try (
+                Connection conn = dataSource.getConnection()
+        ) {
+            conn.setAutoCommit(false);
+
+            try (
+                    PreparedStatement ps = conn.prepareStatement("INSERT INTO employees(emp_name) VALUES (?)")
+            ) {
+                for (String name : names) {
+                    if (name.startsWith("x")) {
+                        throw new IllegalArgumentException("Invalid name");
+                    }
+                    ps.setString(1, name);
+                    ps.executeUpdate();
+                }
+                conn.commit();
+
+            } catch (IllegalArgumentException iae) {
+                conn.rollback();
+            }
+
+        } catch (SQLException sqlException) {
+            throw new IllegalStateException("Cannot insert", sqlException);
+        }
+
+    }
+
+    private long getIdByStatement(PreparedStatement ps) {
+        try (ResultSet rs = ps.getGeneratedKeys()) {
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+            throw new IllegalStateException("Cannot get id");
+        } catch (SQLException se) {
+            throw new IllegalStateException("Cannot get id", se);
         }
     }
 
