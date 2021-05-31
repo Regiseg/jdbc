@@ -45,6 +45,4 @@ class EmployeeDaoTest {
         String name = employeeDao.findEmployeeNameById(id);
         assertEquals("john doe", name);
     }
-
-
 }
