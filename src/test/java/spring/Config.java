@@ -35,6 +35,5 @@ public class Config {
     @Bean
     public EmployeeDao employeeDao() {
         return new EmployeeDao(dataSource());
-
     }
 }
